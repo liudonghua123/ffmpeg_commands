@@ -4,8 +4,6 @@ import 'package:flutter_app/constans.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 
-import './extensions.dart';
-
 void main() {
   runApp(App());
 }
@@ -361,23 +359,25 @@ class _HomePageState extends State<HomePage> {
                                             FormBuilderValidators.required()
                                           ],
                                           items: colors
-                                              .mapIndex(
-                                                (Color color, int index) =>
-                                                    DropdownMenuItem(
-                                                  value: colorNames[index],
-                                                  child: Container(
-                                                    height: 30,
-                                                    color: color,
-                                                    child: Center(
-                                                      child: FittedBox(
-                                                        child: Text(
-                                                            "${colorNames[index]}"),
-                                                      ),
-                                                    ),
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                            int index = entry.key;
+                                            Color color = entry.value;
+                                            return DropdownMenuItem(
+                                              value: colorNames[index],
+                                              child: Container(
+                                                height: 30,
+                                                color: color,
+                                                child: Center(
+                                                  child: FittedBox(
+                                                    child: Text(
+                                                        "${colorNames[index]}"),
                                                   ),
                                                 ),
-                                              )
-                                              .toList(),
+                                              ),
+                                            );
+                                          }).toList(),
                                         ),
                                       ],
                                     )
