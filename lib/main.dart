@@ -1,113 +1,462 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_app/constans.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
+
+import './extensions.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(App());
 }
 
-class MyApp extends StatelessWidget {
+class App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: title,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: defaultPrimaryColor,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomePage(title: title),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class HomePage extends StatefulWidget {
+  HomePage({Key key, this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  bool enableTrim = false;
+  bool enableScale = false;
+  bool enableWatermark = false;
+  var colors = [
+    Colors.black,
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.purple,
+    Colors.grey,
+    Colors.white,
+  ];
+  var colorNames = [
+    'black',
+    'red',
+    'green',
+    'blue',
+    'purple',
+    'grey',
+    'white',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: horizontalMargin, vertical: verticalMargin),
+          child: Column(
+            children: <Widget>[
+              FormBuilder(
+                key: _fbKey,
+                initialValue: <String, Object>{
+                  'input': 'sample.mp4',
+                  'output': 'output.mp4',
+                },
+                autovalidate: true,
+                child: Column(
+                  children: <Widget>[
+                    /// input/output settings
+                    Card(
+                      elevation: cardElevation,
+                      child: Padding(
+                        padding: const EdgeInsets.all(contentMargin),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text('输入输出设置'),
+                            ),
+                            FormBuilderTextField(
+                              attribute: "input",
+                              decoration: InputDecoration(
+                                labelText: "输入文件",
+                              ),
+                              validators: [
+                                FormBuilderValidators.required(
+                                    errorText: '输入文件不能为空'),
+                              ],
+                            ),
+
+                            ///output
+                            FormBuilderTextField(
+                              attribute: "output",
+                              decoration: InputDecoration(
+                                labelText: "输出文件",
+                              ),
+                              validators: [
+                                FormBuilderValidators.required(
+                                    errorText: '输出文件不能为空'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    /// basic compress settings
+                    Card(
+                      elevation: cardElevation,
+                      child: Padding(
+                        padding: const EdgeInsets.all(contentMargin),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text('压缩基本参数'),
+                            ),
+                            FormBuilderSlider(
+                              attribute: "crf",
+                              min: 0,
+                              max: 60,
+                              initialValue: 28,
+                              divisions: 60,
+                              decoration: InputDecoration(
+                                labelText: "crf",
+                              ),
+                              numberFormat: NumberFormat("##", 'en_US'),
+                            ),
+                            FormBuilderDropdown(
+                              attribute: "preset",
+                              decoration: InputDecoration(
+                                labelText: "preset",
+                              ),
+                              initialValue: 'medium',
+                              hint: Text('Select preset'),
+                              validators: [FormBuilderValidators.required()],
+                              items: [
+                                'ultrafast',
+                                'superfast',
+                                'veryfast',
+                                'faster',
+                                'fast',
+                                'medium',
+                                'slow',
+                                'slower',
+                                'veryslow',
+                                'placebo',
+                              ]
+                                  .map((preset) => DropdownMenuItem(
+                                      value: preset, child: Text("$preset")))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    /// trim settings
+                    Card(
+                      elevation: cardElevation,
+                      child: Padding(
+                        padding: const EdgeInsets.all(contentMargin),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              title: const Text('视频片段裁剪设置'),
+                              value: enableTrim,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  enableTrim = value;
+                                });
+                              },
+                              secondary: const Icon(Icons.lightbulb_outline),
+                            ),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 500),
+                              child: enableTrim
+                                  ? Column(
+                                      key: Key('trim'),
+                                      children: [
+                                        FormBuilderTextField(
+                                          attribute: "startTime",
+                                          initialValue: "00:00:00",
+                                          decoration: InputDecoration(
+                                            labelText: "开始时间",
+                                          ),
+                                        ),
+                                        FormBuilderTextField(
+                                          attribute: "endTime",
+                                          initialValue: "00:00:00",
+                                          decoration: InputDecoration(
+                                            labelText: "结束时间",
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Container(
+                                      key: Key('trim-none'),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    /// trim settings
+                    Card(
+                      elevation: cardElevation,
+                      child: Padding(
+                        padding: const EdgeInsets.all(contentMargin),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              title: const Text('分辨率设置'),
+                              value: enableScale,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  enableScale = value;
+                                });
+                              },
+                              secondary: const Icon(Icons.lightbulb_outline),
+                            ),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 500),
+                              child: enableScale
+                                  ? Column(
+                                      key: Key('scale'),
+                                      children: [
+                                        FormBuilderTextField(
+                                          attribute: "width",
+                                          decoration: InputDecoration(
+                                            labelText: "width",
+                                            suffixIcon: IconButton(
+                                              icon: Icon(
+                                                  Icons.screen_lock_portrait),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _fbKey.currentState
+                                                      .setAttributeValue(
+                                                          'width', '-1');
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        FormBuilderTextField(
+                                          attribute: "height",
+                                          decoration: InputDecoration(
+                                            labelText: "height",
+                                            suffixIcon: IconButton(
+                                              icon: Icon(
+                                                  Icons.screen_lock_portrait),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _fbKey.currentState
+                                                      .setAttributeValue(
+                                                          'height', '-1');
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Container(
+                                      key: Key('scale-none'),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    /// trim settings
+                    Card(
+                      elevation: cardElevation,
+                      child: Padding(
+                        padding: const EdgeInsets.all(contentMargin),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              title: const Text('水印设置'),
+                              value: enableWatermark,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  enableWatermark = value;
+                                });
+                              },
+                              secondary: const Icon(Icons.lightbulb_outline),
+                            ),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 500),
+                              child: enableWatermark
+                                  ? Column(
+                                      key: Key('watermark'),
+                                      children: [
+                                        FormBuilderTextField(
+                                          attribute: "text",
+                                          decoration: InputDecoration(
+                                            labelText: "文本",
+                                          ),
+                                        ),
+                                        FormBuilderDropdown(
+                                          attribute: "position",
+                                          decoration: InputDecoration(
+                                            labelText: "位置",
+                                          ),
+                                          initialValue: Alignment.bottomCenter,
+                                          hint: Text('Select position'),
+                                          validators: [
+                                            FormBuilderValidators.required()
+                                          ],
+                                          items: [
+                                            Alignment.topLeft,
+                                            Alignment.topCenter,
+                                            Alignment.topRight,
+                                            Alignment.centerLeft,
+                                            Alignment.center,
+                                            Alignment.centerRight,
+                                            Alignment.bottomLeft,
+                                            Alignment.bottomCenter,
+                                            Alignment.bottomRight,
+                                          ]
+                                              .map((Alignment position) =>
+                                                  DropdownMenuItem(
+                                                      value: position,
+                                                      child: Text("$position")))
+                                              .toList(),
+                                        ),
+                                        FormBuilderTouchSpin(
+                                          attribute: "fontsize",
+                                          initialValue: 12,
+                                          step: 1,
+                                          min: 8,
+                                          max: 72,
+                                          decoration: InputDecoration(
+                                            labelText: "字体大小",
+                                          ),
+                                        ),
+                                        FormBuilderDropdown(
+                                          attribute: "fontcolor",
+                                          decoration: InputDecoration(
+                                            labelText: "字体颜色",
+                                          ),
+                                          initialValue: 'black',
+                                          hint: Text('Select color'),
+                                          validators: [
+                                            FormBuilderValidators.required()
+                                          ],
+                                          items: colors
+                                              .mapIndex(
+                                                (Color color, int index) =>
+                                                    DropdownMenuItem(
+                                                  value: colorNames[index],
+                                                  child: Container(
+                                                    height: 30,
+                                                    color: color,
+                                                    child: Center(
+                                                      child: FittedBox(
+                                                        child: Text(
+                                                            "${colorNames[index]}"),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
+                                      ],
+                                    )
+                                  : Container(
+                                      key: Key('watermark-none'),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: () {
+          // contruct the final commands
+          if (_fbKey.currentState.saveAndValidate()) {
+            print(_fbKey.currentState.value);
+            String commands =
+                "ffmpeg -i ${_fbKey.currentState.value['input']} ${getBasicCompress()} ${getTrim()} ${getScale()} ${getWatermark()} -o ${_fbKey.currentState.value['output']}";
+            _scaffoldKey.currentState
+                .showSnackBar(SnackBar(content: Text(commands)));
+            ClipboardData data = new ClipboardData(text: commands);
+            Clipboard.setData(data);
+          } else {
+            _scaffoldKey.currentState
+                .showSnackBar(SnackBar(content: Text('输入校验有误，请重试！')));
+          }
+        },
+        child: Icon(Icons.assignment_turned_in),
+      ),
     );
+  }
+
+  String getBasicCompress() {
+    return '-crf ${_fbKey.currentState.value['crf']} -preset ${_fbKey.currentState.value['preset']}';
+  }
+
+  String getTrim() {
+    if (!enableTrim) {
+      return '';
+    }
+    return '-ss ${_fbKey.currentState.value['startTime']} -t ${_fbKey.currentState.value['endTime']}';
+  }
+
+  String getScale() {
+    if (!enableScale) {
+      return '';
+    }
+    return '-vf "scale=${_fbKey.currentState.value['width']}:${_fbKey.currentState.value['height']}"';
+  }
+
+  String getWatermark() {
+    if (!enableWatermark) {
+      return '';
+    }
+    Alignment position = _fbKey.currentState.value['position'] as Alignment;
+    double x = position.x;
+    double y = position.y;
+    String xStr, yStr;
+    if (x == -1.0) {
+      xStr = '10';
+    } else if (x == 0.0) {
+      xStr = '(w-text_w)/2';
+    } else if (x == 1.0) {
+      xStr = 'w-text_w-10';
+    }
+    if (y == -1.0) {
+      yStr = '10';
+    } else if (y == 0.0) {
+      yStr = '(h-text_h)/2';
+    } else if (y == 1.0) {
+      yStr = 'h-text_h-10';
+    }
+    return '-vf "drawtext=text=\'${_fbKey.currentState.value['text']}\':x=${xStr}:y=${yStr}:fontsize=${_fbKey.currentState.value['fontsize']}:fontcolor=${_fbKey.currentState.value['fontcolor']}"';
   }
 }
